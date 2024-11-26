@@ -124,6 +124,7 @@ export const Login = async(req,res) => {
         const last_name = user[0].last_name;
         const email = user[0].email
         const profile_image = user[0].profile_image
+      
 
         //console.log(userId)
 

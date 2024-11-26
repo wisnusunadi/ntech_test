@@ -3,7 +3,7 @@ import { getUsers, Login, registerUsers, updateUsers } from "../controllers/User
 import { verifyToken } from "../middleware/VerifyToken.js";
 import { refreshToken } from "../controllers/RefreshToken.js";
 import { getBanner, getService } from "../controllers/ModuleInfo.js";
-import { topUp } from "../controllers/Transactions.js";
+import { history, topUp, transaction } from "../controllers/Transactions.js";
 
 const router = express.Router();
 router.get('/', (req, res) => {
@@ -23,5 +23,8 @@ router.get('/services',verifyToken,getService)
 
 //Transaksi
 router.post('/topup',verifyToken,topUp);
+router.post('/transaction',verifyToken,transaction);
+router.get('/transaction/history',verifyToken,history);
+
 
 export default router;
