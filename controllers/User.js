@@ -3,12 +3,20 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken";
 
 export const getUsers = async(req,res) => {
-    try {
-        const users = await Users.findAll();
-        res.json(users)
-    } catch (error) {
-        console.log(error)
-    }
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if(token == null) return res.status(401).json({  status : 108  ,message: "Token tidak tidak valid atau kadaluwarsa" ,data: null});
+
+    jwt.verify(token,process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if(err)  return res.status(401).json({  status : 108  ,message: "Token tidak tidak valid atau kadaluwarsa" ,data: null});
+        return res.status(200).json({ status : 0 ,message: "Sukses" ,data: {
+            email : decoded.email,
+            first_name : decoded.first_name,
+            last_name : decoded.last_name,
+            profile_image : decoded.profile_image,
+        }});
+      })  
+   
 }
 
 export const registerUsers = async(req,res) => {
@@ -80,7 +88,7 @@ export const Login = async(req,res) => {
         //console.log(userId)
 
         const accesToken = jwt.sign({first_name,last_name,email,profile_image},process.env.ACCESS_TOKEN_SECRET,{
-            expiresIn : '20s'
+            expiresIn : '1d'
         })
         const refreshToken = jwt.sign({first_name,last_name,email,profile_image},process.env.REFRESH_TOKEN_SECRET,{
             expiresIn : '1d'
