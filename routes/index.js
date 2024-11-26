@@ -1,16 +1,18 @@
 import express from "express";
-import { getUsers, Login, registerUsers } from "../controllers/User.js";
+import { getUsers, Login, registerUsers, updateUsers } from "../controllers/User.js";
 import { verifyToken } from "../middleware/VerifyToken.js";
 import { refreshToken } from "../controllers/RefreshToken.js";
 import { getBanner, getService } from "../controllers/ModuleInfo.js";
+import { topUp } from "../controllers/Transactions.js";
 
 const router = express.Router();
 router.get('/', (req, res) => {
     res.send('Welcome to test API by wisnu')
   })
 // Member 
+router.put('/profile/update',verifyToken,updateUsers);
 router.get('/profile',verifyToken,getUsers);
-router.post('/users',registerUsers);
+router.post('/registration',registerUsers);
 router.post('/login',Login);
 router.get('/token', refreshToken)
 
@@ -18,5 +20,8 @@ router.get('/token', refreshToken)
 router.get('/banner',getBanner)
 router.get('/services',verifyToken,getService)
 
+
+//Transaksi
+router.post('/topup',verifyToken,topUp);
 
 export default router;

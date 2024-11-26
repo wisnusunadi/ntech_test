@@ -2,13 +2,53 @@ import Users from "../models/UserModel.js";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken";
 
+export const updateUsers = async(req,res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    const {first_name} = req.body;
+
+
+    const decoded = await new Promise((resolve, reject) => {
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+            if (err) {
+                reject(new Error('Token tidak tidak valid atau kadaluwarsa'));
+            }
+            resolve(decoded);
+        });
+    });
+      
+    const userId =decoded.id
+    const last_name =decoded.last_name;
+    const email =decoded.email
+    const profile_image =decoded.profile_image
+
+    
+      await Users.update({first_name:first_name},{
+        where : {
+            id : decoded.userId
+        }
+    })
+
+    
+    const accesToken = jwt.sign({userId,first_name,last_name,email,profile_image},process.env.ACCESS_TOKEN_SECRET,{
+        expiresIn : '1d'
+    })
+    const refreshToken = jwt.sign({userId,first_name,last_name,email,profile_image},process.env.REFRESH_TOKEN_SECRET,{
+        expiresIn : '1d'
+    })
+
+
+    return res.status(200).json({ status : 0 ,message: "Update Berhasil" ,data: decoded});
+}
+
+
+
+
 export const getUsers = async(req,res) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if(token == null) return res.status(401).json({  status : 108  ,message: "Token tidak tidak valid atau kadaluwarsa" ,data: null});
 
     jwt.verify(token,process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-        if(err)  return res.status(401).json({  status : 108  ,message: "Token tidak tidak valid atau kadaluwarsa" ,data: null});
         return res.status(200).json({ status : 0 ,message: "Sukses" ,data: {
             email : decoded.email,
             first_name : decoded.first_name,
@@ -87,10 +127,10 @@ export const Login = async(req,res) => {
 
         //console.log(userId)
 
-        const accesToken = jwt.sign({first_name,last_name,email,profile_image},process.env.ACCESS_TOKEN_SECRET,{
+        const accesToken = jwt.sign({userId,first_name,last_name,email,profile_image},process.env.ACCESS_TOKEN_SECRET,{
             expiresIn : '1d'
         })
-        const refreshToken = jwt.sign({first_name,last_name,email,profile_image},process.env.REFRESH_TOKEN_SECRET,{
+        const refreshToken = jwt.sign({userId,first_name,last_name,email,profile_image},process.env.REFRESH_TOKEN_SECRET,{
             expiresIn : '1d'
         })
 
