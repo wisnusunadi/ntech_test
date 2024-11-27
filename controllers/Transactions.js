@@ -4,7 +4,34 @@ import Transaction from "../models/Transaction.js";
 import db from "../config/Database.js";
 
 
+export const getBalance = async(req,res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
+
+    const decoded = await new Promise((resolve, reject) => {
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+            if (err) {
+                reject(new Error('Token tidak tidak valid atau kadaluwarsa'));
+            }
+            resolve(decoded);
+        });
+    });
+
+
+    const user = await Users.findByPk(decoded.userId)
+
+    res.status(200).json({
+        status : 0 ,
+      message: 'Get Balance Berhasil',
+    data: {
+      balance: user.balance,
+    }
+    });
+
+
+   
+}
 
     export const transaction = async(req,res) => {
         const authHeader = req.headers['authorization'];

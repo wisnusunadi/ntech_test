@@ -1,11 +1,58 @@
 import Users from "../models/UserModel.js";
 import bcrypt from "bcrypt"
-import jwt from "jsonwebtoken";
+import jwt, { decode } from "jsonwebtoken";
+
+
+
+
+export const updateImage = async(req,res) => {
+   
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+      
+        if (!req.file) {
+            return res.status(400).json({  status : 102 ,message: "Format Image tidak sesuai" ,data:null});
+        }
+    
+       
+        const decoded = await new Promise((resolve, reject) => {
+            jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+                if (err) {
+                    reject(new Error('Token tidak tidak valid atau kadaluwarsa'));
+                }
+                resolve(decoded);
+            });
+        });
+
+        await Users.update({profile_image: req.file.filename},{
+            where : {
+                id : decoded.userId
+            }
+        })
+
+        const user = await Users.findByPk(decoded.userId)
+
+    
+    
+        res.status(200).json({
+            status : 0 ,
+          message: 'Update Profile Image berhasil',
+        data: {
+          email: user.email,
+          first_name : user.first_name,
+          last_name : user.last_name,
+          profile_image : `${req.protocol}://${req.headers.host}/uploads/${user.profile_image}`
+        
+        }
+        });
+     
+}
+
 
 export const updateUsers = async(req,res) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    const {first_name} = req.body;
+    const {first_name,last_name} = req.body;
 
 
     const decoded = await new Promise((resolve, reject) => {
@@ -16,29 +63,31 @@ export const updateUsers = async(req,res) => {
             resolve(decoded);
         });
     });
-      
-    const userId =decoded.id
-    const last_name =decoded.last_name;
-    const email =decoded.email
-    const profile_image =decoded.profile_image
-
+     
     
-      await Users.update({first_name:first_name},{
+      await Users.update({first_name:first_name,last_name:last_name},{
         where : {
             id : decoded.userId
         }
     })
 
+
+    const user = await Users.findByPk(decoded.userId)
+
     
-    const accesToken = jwt.sign({userId,first_name,last_name,email,profile_image},process.env.ACCESS_TOKEN_SECRET,{
-        expiresIn : '1d'
-    })
-    const refreshToken = jwt.sign({userId,first_name,last_name,email,profile_image},process.env.REFRESH_TOKEN_SECRET,{
-        expiresIn : '1d'
-    })
+    
+    res.status(200).json({
+        status : 0 ,
+      message: 'Update Berhasil',
+    data: {
+      email: user.email,
+      first_name : user.first_name,
+      last_name : user.last_name,
+      profile_image : user.profile_image != null ?  `${req.protocol}://${req.headers.host}/uploads/${user.profile_image}` : null
+    
+    }
+    });
 
-
-    return res.status(200).json({ status : 0 ,message: "Update Berhasil" ,data: decoded});
 }
 
 
@@ -48,22 +97,49 @@ export const getUsers = async(req,res) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
-    jwt.verify(token,process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-        return res.status(200).json({ status : 0 ,message: "Sukses" ,data: {
-            email : decoded.email,
-            first_name : decoded.first_name,
-            last_name : decoded.last_name,
-            profile_image : decoded.profile_image,
-        }});
-      })  
+
+    const decoded = await new Promise((resolve, reject) => {
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+            if (err) {
+                reject(new Error('Token tidak tidak valid atau kadaluwarsa'));
+            }
+            resolve(decoded);
+        });
+    });
+
+
+    const user = await Users.findByPk(decoded.userId)
+
+    res.status(200).json({
+        status : 0 ,
+      message: 'Sukses',
+    data: {
+      email: user.email,
+      first_name : user.first_name,
+      last_name : user.last_name,
+      profile_image : user.profile_image != null ?  `${req.protocol}://${req.headers.host}/uploads/${user.profile_image}` : null
+    
+    }
+    });
+
+
    
 }
 
 export const registerUsers = async(req,res) => {
     //Email Sudah Ada
+    
     const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     const {email,first_name,last_name,password} = req.body;
+    const existingUser = await Users.findOne({
+        where: { email: email }
+      });
 
+      
+    if (existingUser) {
+        return res.status(400).json({  status : 102 ,message: "Email terpakai" ,data: null});
+      }
+      
     if (email && !emailRegexp.test(email)) {
         return res.status(400).json({  status : 102 ,message: "Parameter email tidak sesuai format" ,data: null});
       }
