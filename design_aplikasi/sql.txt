@@ -1,0 +1,51 @@
+-- ntech.banner definition
+
+CREATE TABLE `banner` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `banner_name` varchar(255) DEFAULT NULL,
+  `banner_image` text DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- ntech.services definition
+
+CREATE TABLE `services` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `service_name` varchar(100) DEFAULT NULL,
+  `service_code` varchar(100) DEFAULT NULL,
+  `service_icon` text DEFAULT NULL,
+  `service_tarif` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ntech.transactions definition
+
+CREATE TABLE `transactions` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) DEFAULT NULL,
+  `invoice_number` varchar(255) DEFAULT NULL,
+  `transaction_type` varchar(100) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `total_amount` decimal(10,0) DEFAULT NULL,
+  `created_on` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `transactions_users_FK` (`user_id`),
+  CONSTRAINT `transactions_users_FK` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+-- ntech.users definition
+
+CREATE TABLE `users` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) DEFAULT NULL,
+  `password` text DEFAULT NULL,
+  `first_name` varchar(255) DEFAULT NULL,
+  `last_name` varchar(255) DEFAULT NULL,
+  `profile_image` text DEFAULT NULL,
+  `balance` decimal(10,0) DEFAULT 0,
+  `refresh_token` text DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -1,7 +1,8 @@
 import Users from "../models/UserModel.js";
 import bcrypt from "bcrypt"
-import jwt, { decode } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { supabase } from "../config/SupabaseClient.js";
+import { decode } from "base64-arraybuffer";
 
 
 
@@ -13,6 +14,7 @@ export const updateImage = async(req,res) => {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
         const file = req.file;
+        const filename = new Date().toISOString().replace(/:/g, '-')+ file.originalname;
       
         if (!req.file) {
             return res.status(400).json({
@@ -26,7 +28,7 @@ export const updateImage = async(req,res) => {
 
         const { data, error } = await supabase.storage
         .from("profile_img")
-        .upload(file.originalname, fileBase64, {
+        .upload(filename, fileBase64, {
             contentType: "image/png",
         });
 
@@ -71,70 +73,13 @@ export const updateImage = async(req,res) => {
                
         res.status(500).json({
             status: 1,
-            message: error.message || 'An unexpected error occurred.',
+            message: error.message || 'Server Error',
             data: null
         });
     }
      
 }
-// export const updateImage = async(req,res) => {
-   
-//     try {
-       
-//         const authHeader = req.headers['authorization'];
-//         const token = authHeader && authHeader.split(' ')[1];
 
-      
-//         if (!req.file) {
-//             return res.status(400).json({
-//                 status: 102,
-//                 message: "Format Image tidak sesuai",
-//                 data: null
-//             });
-//         }
-
-       
-//         const decoded = await new Promise((resolve, reject) => {
-//             jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-//                 if (err) {
-//                     reject(new Error('Token tidak valid atau kadaluwarsa'));
-//                 }
-//                 resolve(decoded);
-//             });
-//         });
-
-      
-//         await Users.update({ profile_image: req.file.filename }, {
-//             where: {
-//                 id: decoded.userId
-//             }
-//         });
-
-       
-//         const user = await Users.findByPk(decoded.userId);
-
-      
-//         res.status(200).json({
-//             status: 0,
-//             message: 'Update Profile Image berhasil',
-//             data: {
-//                 email: user.email,
-//                 first_name: user.first_name,
-//                 last_name: user.last_name,
-//                 profile_image: `${req.protocol}://${req.headers.host}/uploads/${user.profile_image}`
-//             }
-//         });
-
-//     } catch (error) {
-               
-//         res.status(500).json({
-//             status: 1,
-//             message: error.message || 'An unexpected error occurred.',
-//             data: null
-//         });
-//     }
-     
-// }
 
 
 export const updateUsers = async(req,res) => {
@@ -215,7 +160,7 @@ export const getUsers = async(req,res) => {
 }
 
 export const registerUsers = async(req,res) => {
-    //Email Sudah Ada
+   
     
     const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     const {email,first_name,last_name,password} = req.body;

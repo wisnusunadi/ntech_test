@@ -1,6 +1,4 @@
 import db from "../config/Database.js";
-import Banner from "../models/Banner.js";
-import Services from "../models/Service.js"
 
 
 export const getBanner = async(req,res) => {
