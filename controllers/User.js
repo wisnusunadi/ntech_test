@@ -31,7 +31,7 @@ export const updateImage = async(req,res) => {
         });
 
         const { data: image } = supabase.storage
-        .from("images")
+        .from("profile_img")
         .getPublicUrl(data.path);
   
 
