@@ -7,44 +7,60 @@ import jwt, { decode } from "jsonwebtoken";
 
 export const updateImage = async(req,res) => {
    
+    try {
+       
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
+
       
         if (!req.file) {
-            return res.status(400).json({  status : 102 ,message: "Format Image tidak sesuai" ,data:null});
+            return res.status(400).json({
+                status: 102,
+                message: "Format Image tidak sesuai",
+                data: null
+            });
         }
-    
+
        
         const decoded = await new Promise((resolve, reject) => {
             jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
                 if (err) {
-                    reject(new Error('Token tidak tidak valid atau kadaluwarsa'));
+                    reject(new Error('Token tidak valid atau kadaluwarsa'));
                 }
                 resolve(decoded);
             });
         });
 
-        await Users.update({profile_image: req.file.filename},{
-            where : {
-                id : decoded.userId
+      
+        await Users.update({ profile_image: req.file.filename }, {
+            where: {
+                id: decoded.userId
             }
-        })
-
-        const user = await Users.findByPk(decoded.userId)
-
-    
-    
-        res.status(200).json({
-            status : 0 ,
-          message: 'Update Profile Image berhasil',
-        data: {
-          email: user.email,
-          first_name : user.first_name,
-          last_name : user.last_name,
-          profile_image : `${req.protocol}://${req.headers.host}/uploads/${user.profile_image}`
-        
-        }
         });
+
+       
+        const user = await Users.findByPk(decoded.userId);
+
+      
+        res.status(200).json({
+            status: 0,
+            message: 'Update Profile Image berhasil',
+            data: {
+                email: user.email,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                profile_image: `${req.protocol}://${req.headers.host}/uploads/${user.profile_image}`
+            }
+        });
+
+    } catch (error) {
+               
+        res.status(500).json({
+            status: 1,
+            message: error.message || 'An unexpected error occurred.',
+            data: null
+        });
+    }
      
 }
 
