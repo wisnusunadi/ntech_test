@@ -1,5 +1,5 @@
 ## Akses public
-https://ntech-test.vercel.app/
+https://wisnu-nutech-test.vercel.app
 
 
 ## Instalasi
