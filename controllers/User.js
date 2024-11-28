@@ -282,7 +282,7 @@ export const Login = async(req,res) => {
         const match = await bcrypt.compare(req.body.password,user[0].password)
         if(!match)   return res.status(401).json({  status : 103  ,message: "Email atau password salah" ,data: null});
 
-        //res.status(200).json({message: "ok"})
+      
         const userId = user[0].id
         const first_name = user[0].first_name;
         const last_name = user[0].last_name;
@@ -290,7 +290,7 @@ export const Login = async(req,res) => {
         const profile_image = user[0].profile_image
       
 
-        //console.log(userId)
+       
 
         const accesToken = jwt.sign({userId,first_name,last_name,email,profile_image},process.env.ACCESS_TOKEN_SECRET,{
             expiresIn : '1d'
